@@ -1,0 +1,11 @@
+.koka/
+build/
+bin/
+*.o
+*.a
+*.so
+*.dylib
+*.out
+__pycache__/
+*.pyc
+.DS_Store
