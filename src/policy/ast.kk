@@ -48,26 +48,12 @@ pub struct prefix-rule(
 
 // Check if a target prefix matches a prefix-rule with ge/le bounds
 pub fun match-prefix-rule(rule : prefix-rule, target : ip-prefix) : bool
-  // Both prefixes must have the same IP version
-  match (rule.match-prefix, target)
-    (Ipv4-prefix(r-ip, r-len), Ipv4-prefix(t-ip, t-len)) ->
-      if t-len < r-len then False
-      else
-        // Target must fall within rule prefix network mask
-        val r-net = ipv4-network(r-ip, r-len)
-        val t-net = ipv4-network(t-ip, r-len)
-        if r-net != t-net then False
-        else
-          val min-len = rule.ge-len.default(r-len)
-          val max-len = rule.le-len.default(32)
-          (t-len >= min-len) && (t-len <= max-len)
-    (Ipv6-prefix(r-hi, r-lo, r-len), Ipv6-prefix(t-hi, t-lo, t-len)) ->
-      if t-len < r-len then False
-      else
-        val min-len = rule.ge-len.default(r-len)
-        val max-len = rule.le-len.default(128)
-        (t-len >= min-len) && (t-len <= max-len)
-    _ -> False
+  // Target must be a subnet of rule.match-prefix
+  if !prefix-is-subnet(target, rule.match-prefix) then False
+  else
+    val min-len = rule.ge-len.default(rule.match-prefix.length)
+    val max-len = rule.le-len.default(match target.network { V4(_) -> 32; V6(_) -> 128 })
+    (target.length >= min-len) && (target.length <= max-len)
 
 // Prefix list containing ordered prefix rules
 pub struct prefix-list(
@@ -97,7 +83,7 @@ pub type as-path-pattern
 
 // Match an AS_PATH against an as-path-pattern
 pub fun match-as-path(pattern : as-path-pattern, path : as-path) : bool
-  val as-list = as-path-flatten(path)
+  val as-list = as-path-asns(path)
   match pattern
     AsPatternAny -> True
     AsPatternOrigin(target) ->
@@ -127,7 +113,7 @@ pub fun match-community-filter(filter : community-filter, comms : list<community
     CommunityExact(target) ->
       comms.any(fn(c) c == target)
     CommunityWellKnown(tag) ->
-      comms.any(fn(c) c.comm-val == tag)
+      comms.any(fn(c) c.community-value == tag)
     CommunityListAny(targets) ->
       targets.any(fn(t) comms.any(fn(c) c == t))
 

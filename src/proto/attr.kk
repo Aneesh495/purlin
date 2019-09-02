@@ -111,6 +111,11 @@ pub fun as-path-prepend(p : as-path, a : asn) : as-path {
     Nil -> As-path([As-segment(as-segment-sequence, [a])])
 }
 
+// Flatten all ASNs in an AS_PATH in order
+pub fun as-path-asns(p : as-path) : list<asn> {
+  p.segments.flatmap(fn(seg) seg.asns)
+}
+
 // RFC 1997 Standard 32-bit BGP Community
 pub struct community
   asn-high : int
@@ -118,6 +123,10 @@ pub struct community
 
 pub fun community-create(h : int, l : int) : community {
   Community(h, l)
+}
+
+pub fun community-value(c : community) : int {
+  (c.asn-high * 65536) + c.val-low
 }
 
 pub fun community/show(c : community) : string {
