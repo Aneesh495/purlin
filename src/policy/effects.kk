@@ -63,7 +63,7 @@ pub fun with-filter(action : () -> <route-filter|e> a) : e maybe<a>
 // Runs the action against an initial route and returns the mutated route.
 pub fun with-mutation(initial-route : bgp-route, action : () -> <route-mutate|e> a) : e (a, bgp-route)
   var curr := initial-route
-  val res = with handler
+  with handler
     fun mutate-local-pref(p)
       curr := curr(local-pref = p)
     fun mutate-med(m)
@@ -81,15 +81,15 @@ pub fun with-mutation(initial-route : bgp-route, action : () -> <route-mutate|e>
       else ()
     fun mutate-delete-community(c)
       curr := curr(communities = curr.communities.filter(fn(x) x != c))
-  action()
+  val res = action()
   (res, curr)
 
 // Handler for route-audit effect.
 // Collects an ordered log of audit events during evaluation.
 pub fun with-audit(action : () -> <route-audit|e> a) : e (a, list<audit-event>)
   var events := []
-  val res = with handler
+  with handler
     fun audit-log(seq, disp, desc)
       events := Cons(Audit-event(seq, disp, desc), events)
-  action()
+  val res = action()
   (res, events.reverse)
