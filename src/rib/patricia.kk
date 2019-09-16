@@ -116,6 +116,30 @@ pub fun patricia-lpm(trie : patricia-trie<a>, dst-ip : ipv4) : div maybe<(ip-pre
   lpm-node(trie.root, 0, Nothing)
 }
 
+// Find all nodes in the trie that cover the given prefix (ancestor supernets)
+pub fun patricia-covering(trie : patricia-trie<a>, target : ip-prefix) : div list<(ip-prefix, a)> {
+  match target.network
+    V4(target-ip) -> {
+      fun collect-node(node, bit-idx, acc) {
+        match node
+          PatEmpty -> acc
+          PatNode(cur-p, val-opt, l, r) -> {
+            val next-acc = match val-opt
+              Just(v) -> if prefix-is-subnet(target, cur-p) then Cons((cur-p, v), acc) else acc
+              Nothing -> acc
+            if bit-idx >= target.length then next-acc
+            else {
+              val is-right = test-ipv4-bit(target-ip, bit-idx)
+              val next-child = if is-right then r else l
+              collect-node(next-child, bit-idx + 1, next-acc)
+            }
+          }
+      }
+      collect-node(trie.root, 0, [])
+    }
+    V6(_) -> []
+}
+
 // Delete an IP prefix from the Patricia Trie
 pub fun patricia-delete(trie : patricia-trie<a>, p : ip-prefix) : div patricia-trie<a> {
   match p.network
