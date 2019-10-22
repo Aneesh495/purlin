@@ -90,6 +90,9 @@ pub struct decision-config(
 pub fun decision-config-default(my-asn : asn) : decision-config
   Decision-config(my-asn, False, True, True)
 
+pub fun default-decision-config() : decision-config
+  Decision-config(asn(0), False, True, True)
+
 // Scalar comparison helpers to eliminate duplicate record teardowns in C generation
 
 fun check-weight(w1 : int, w2 : int) : maybe<(order, decision-reason)>
@@ -226,3 +229,21 @@ pub fun select-best-path(routes : list<bgp-route>, cfg : decision-config) : mayb
       val (winner, reason) = tournament(rest, first-route, ReasonInitialCandidate)
       val marked-winner = winner(is-best = True)
       Just((marked-winner, reason))
+
+// Recompute the best path for an IP prefix and mark the winning candidate
+pub fun rib-update-best-paths(
+  rib : rib-table,
+  p   : ip-prefix,
+  cfg : decision-config = default-decision-config()
+) : div rib-table
+  val candidates = rib-lookup(rib, p)
+  match select-best-path(candidates, cfg)
+    Just((best, _)) ->
+      val updated = candidates.map(fn(r) {
+        if r.peer-ip == best.peer-ip then best
+        else r(is-best = False)
+      })
+      rib-replace-prefix(rib, p, updated)
+    Nothing ->
+      val unbested = candidates.map(fn(r) r(is-best = False))
+      rib-replace-prefix(rib, p, unbested)

@@ -155,6 +155,15 @@ pub fun rib-withdraw(rib : rib-table, p : ip-prefix, p-ip : ipv4) : div rib-tabl
   }
 }
 
+// Replace the candidate route list for a prefix directly in the RIB
+pub fun rib-replace-prefix(rib : rib-table, p : ip-prefix, new-routes : list<bgp-route>) : div rib-table {
+  if new-routes.is-empty then {
+    Rib-table(patricia-delete(rib.routes, p))
+  } else {
+    Rib-table(patricia-insert(rib.routes, p, new-routes))
+  }
+}
+
 // Lookup all candidate routes for an IP prefix
 pub fun rib-lookup(rib : rib-table, p : ip-prefix) : div list<bgp-route> {
   patricia-lookup-exact(rib.routes, p).default([])
