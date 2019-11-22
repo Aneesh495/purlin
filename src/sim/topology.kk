@@ -18,6 +18,13 @@ pub fun node-role/show(r : node-role) : string
     RoleLeaf -> "LEAF"
     RoleTorHost -> "HOST"
 
+pub fun node-role/(==)(a : node-role, b : node-role) : bool
+  match (a, b)
+    (RoleSpine, RoleSpine) -> True
+    (RoleLeaf, RoleLeaf) -> True
+    (RoleTorHost, RoleTorHost) -> True
+    _ -> False
+
 // Switch node descriptor in the topology
 pub struct sim-node(
   node-id   : string,
