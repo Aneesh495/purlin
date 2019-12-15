@@ -16,7 +16,7 @@ pub type cli-command
   CmdShowVersion
   CmdRunDaemon(config-path : string)
   CmdHelp
-  CmdUnknown(raw : string)
+  CmdUnknown(raw-str : string)
 
 pub fun cli-command/show(cmd : cli-command) : string
   match cmd

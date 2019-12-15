@@ -5,6 +5,7 @@ import std/core/list
 import std/core/maybe
 import std/core/string
 import proto/types
+import proto/attr
 import proto/fsm
 import rib/table
 import fib/table
@@ -13,13 +14,9 @@ import damping/flap
 import engine/peer
 import engine/daemon
 
-// Pad string on right with spaces to fixed column width
-fun pad-right(s : string, width : int) : string
-  if s.length >= width then s
-  else s ++ " ".repeat(width - s.length)
 
 // Format standard BGP summary table (Cisco/Juniper/FRR style)
-pub fun format-bgp-summary(d : bgp-daemon) : string
+pub fun format-bgp-summary(d : bgp-daemon) : div string
   val header = "BGP router identifier " ++ d.local-id.show ++ ", local AS number " ++ d.local-asn.show ++ "\n" ++
                "RIB entries " ++ rib-all-routes(d.rib).length.show ++ ", FIB entries " ++ fib-all-entries(d.fib).length.show ++ "\n" ++
                "Peers " ++ d.peers.length.show ++ "\n\n" ++
@@ -95,7 +92,7 @@ pub fun format-fib-table(fib : fib-table) : div string
     val nh-rows = e.nexthops.map(fn(nh) {
       val gw-str = pad-right(nh.gateway-ip.show, 22)
       val if-str = pad-right(nh.egress-if.if-name, 14)
-      gw-str ++ if-str ++ e.proto
+      gw-str ++ if-str ++ e.route-source
     })
     
     match nh-rows
@@ -105,14 +102,14 @@ pub fun format-fib-table(fib : fib-table) : div string
           pad-right("", 22) ++ onh
         })
         Cons(first-line, other-lines).join("\n")
-      Nil -> dst-str ++ pad-right("DIRECT", 22) ++ pad-right("lo", 14) ++ e.proto
+      Nil -> dst-str ++ pad-right("DIRECT", 22) ++ pad-right("lo", 14) ++ e.route-source
   }).join("\n")
   
   header ++ rows ++ "\n"
 
 // Format RPKI ROA cache summary
 pub fun format-rpki-summary(cache : roa-cache) : div string
-  val total = roa-count(cache)
+  val total = roa-cache-size(cache)
   "RPKI Route Origin Authorization (ROA) Cache Status:\n" ++
   "  Total Valid ROAs Indexed : " ++ total.show ++ "\n" ++
   "  Validation Policy         : RFC 6811 Prefix Origin Validation\n" ++

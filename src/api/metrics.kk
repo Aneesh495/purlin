@@ -8,6 +8,7 @@ import proto/fsm
 import rib/table
 import fib/table
 import rpki/roa
+import damping/flap
 import engine/peer
 import engine/daemon
 
@@ -16,7 +17,7 @@ pub fun export-prometheus-metrics(d : bgp-daemon) : div string
   val peers-up = d.peers.filter(fn(p) p.fsm-state == StateEstablished).length
   val total-rib = rib-all-routes(d.rib).length
   val total-fib = fib-all-entries(d.fib).length
-  val total-roas = roa-count(d.rpki)
+  val total-roas = roa-cache-size(d.rpki)
   val total-flaps = d.flaps.records.length
   
   val lines = [
