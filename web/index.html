@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purlin: Autonomous System BGP-4 & Clos Fabric Operations Console</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-mark">PURLIN</div>
+      <div class="sub-title">BGP-4 & MP-BGP Routing Engine | Clos Fabric Operations</div>
+    </div>
+    <div class="header-right">
+      <span class="badge badge-success">DAEMON RUNNING</span>
+      <span class="badge badge-info">RFC 7938 CLOS</span>
+      <span class="badge badge-primary">RPKI ACTIVE</span>
+    </div>
+  </header>
+
+  <main class="dashboard-grid">
+    <!-- Top Left: Interactive SVG Topology Graph -->
+    <section class="card topology-card">
+      <div class="card-header">
+        <h2>Clos Spine-Leaf Network Topology</h2>
+        <div class="controls">
+          <button id="btn-toggle-l2s1" class="btn btn-warning">Cut Link L2-S1</button>
+          <button id="btn-inject-prefix" class="btn btn-primary">Inject 10.101.0.0/16</button>
+          <button id="btn-reset" class="btn btn-secondary">Reset Topology</button>
+        </div>
+      </div>
+      <div class="topology-container">
+        <svg id="topo-svg" viewBox="0 0 800 420" width="100%" height="100%">
+          <!-- Links will be dynamically drawn by app.js -->
+          <g id="svg-links"></g>
+          <!-- Nodes will be dynamically drawn by app.js -->
+          <g id="svg-nodes"></g>
+        </svg>
+      </div>
+      <div class="topology-legend">
+        <span><span class="dot dot-spine"></span> Spine Switches (AS 65100)</span>
+        <span><span class="dot dot-leaf"></span> Leaf Switches (eBGP)</span>
+        <span><span class="dot dot-link-up"></span> Link Active</span>
+        <span><span class="dot dot-link-down"></span> Link Cut</span>
+      </div>
+    </section>
+
+    <!-- Top Right: Telemetry & Daemon Status -->
+    <section class="card metrics-card">
+      <div class="card-header">
+        <h2>Live Control Plane Telemetry</h2>
+        <span class="refresh-indicator">1000ms Poll</span>
+      </div>
+      <div class="metric-tiles">
+        <div class="metric-tile">
+          <div class="metric-label">Active Peers</div>
+          <div class="metric-val text-success" id="val-peers">6 / 6</div>
+        </div>
+        <div class="metric-tile">
+          <div class="metric-label">RIB Routes</div>
+          <div class="metric-val text-primary" id="val-rib-routes">14</div>
+        </div>
+        <div class="metric-tile">
+          <div class="metric-label">FIB ECMP Groups</div>
+          <div class="metric-val text-warning" id="val-fib-ecmp">3 (Dual-Path)</div>
+        </div>
+        <div class="metric-tile">
+          <div class="metric-label">RPKI Valid</div>
+          <div class="metric-val text-success" id="val-rpki">100.0%</div>
+        </div>
+      </div>
+
+      <div class="peer-table-container">
+        <h3>BGP Neighbors</h3>
+        <table class="data-table" id="peer-table">
+          <thead>
+            <tr>
+              <th>Neighbor IP</th>
+              <th>Remote AS</th>
+              <th>State</th>
+              <th>Hold Time</th>
+              <th>Pfx Received</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Bottom Left: Routing Information Base (RIB) -->
+    <section class="card rib-card">
+      <div class="card-header">
+        <h2>Routing Information Base (RIB)</h2>
+        <div class="search-box">
+          <input type="text" id="rib-search" placeholder="Filter prefix or ASN...">
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="rib-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Network Prefix</th>
+              <th>Next Hop</th>
+              <th>AS Path</th>
+              <th>MED</th>
+              <th>LocalPref</th>
+              <th>Origin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Bottom Right: Forwarding Information Base (FIB) -->
+    <section class="card fib-card">
+      <div class="card-header">
+        <h2>Synthesized Hardware FIB (Line-Rate LPM)</h2>
+        <span class="fib-mode-badge">Bitwise Patricia Trie</span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="fib-table">
+          <thead>
+            <tr>
+              <th>Destination Prefix</th>
+              <th>Hardware Next Hop(s)</th>
+              <th>Egress Interface</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span>Purlin v0.9.4 | High-Performance Pure BGP-4 / MP-BGP Routing Engine in Koka</span>
+    <span>Zero Memory Leaks | Algebraic Effect Safe | Sub-Microsecond Patricia Trie LPM</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
