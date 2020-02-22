@@ -1,0 +1,59 @@
+name: Purlin CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  verify-and-test:
+    name: Verify, Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify No Em Dashes
+        run: |
+          python3 scripts/verify_no_em_dash.py
+
+      - name: Build C Kernel Glue Layer
+        run: |
+          gcc -Wall -Wextra -O3 -fPIC -c src/c/socket.c -o src/c/socket.o
+          gcc -Wall -Wextra -O3 -fPIC -c src/c/fib_nl.c -o src/c/fib_nl.o
+          ar rcs src/c/libpurlin_c.a src/c/socket.o src/c/fib_nl.o
+          test -f src/c/libpurlin_c.a
+
+      - name: Run RFC Conformance Testbench
+        run: |
+          python3 harness/rfc_conformance.py
+
+      - name: Run Clos Fabric Chaos Simulation
+        run: |
+          python3 harness/simulate_clos.py
+
+      - name: Run Wire Frame Boundary Fuzzer
+        run: |
+          python3 harness/fuzz_wire.py
+
+      - name: Run Automated Testbench Harness
+        run: |
+          python3 harness/testbench.py
+
+      - name: Install Koka Compiler
+        run: |
+          KOKA_VER="3.2.0"
+          curl -sSL "https://github.com/koka-lang/koka/releases/download/v${KOKA_VER}/koka-v${KOKA_VER}-linux-x64.tar.gz" -o /tmp/koka.tar.gz
+          sudo tar -xzf /tmp/koka.tar.gz -C /usr/local --strip-components=1
+          koka --version
+
+      - name: Run Koka Unit and Integration Tests
+        run: |
+          make test
