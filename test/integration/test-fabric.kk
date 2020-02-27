@@ -58,8 +58,6 @@ fun test-clos-fabric-convergence-and-failover() : <div,exn,console> bool
     Nothing -> False
     
   t1 && t2 && t3 && t4 && t5 && t6 && t7 && t8
-    
-  t1 && t2 && t3 && t4 && t5 && t6 && t7 && t8
 
 pub fun main() : <div,exn,console> ()
   println("Running 5-Node Clos Spine-Leaf Fabric Simulation...")
