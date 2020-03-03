@@ -95,8 +95,8 @@ test: verify test-unit test-integration test-regression
 
 bench:
 	@echo "=== Running Purlin Performance Benchmarks ==="
-	@if [ -f bench/bench_rib.kk ]; then $(KOKA) -O2 -isrc -ibench -e bench/bench_rib.kk; fi
-	@if [ -f bench/bench_policy.kk ]; then $(KOKA) -O2 -isrc -ibench -e bench/bench_policy.kk; fi
+	@if [ -f bench/bench-rib.kk ]; then $(KOKA) -O2 -isrc -e bench/bench-rib.kk; fi
+	@if [ -f bench/bench-policy.kk ]; then $(KOKA) -O2 -isrc -e bench/bench-policy.kk; fi
 
 clean:
 	@rm -rf $(BIN_DIR) $(LIB_DIR) .koka
