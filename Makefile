@@ -1,7 +1,7 @@
 # Purlin: Autonomous System BGP-4 & MP-BGP Routing Engine
 # Universal Makefile for Koka, C glue layer, benchmarks, and verification
 
-KOKA := /opt/homebrew/Cellar/koka/3.2.9/bin/koka
+KOKA ?= koka
 CC := clang
 CFLAGS := -Wall -Wextra -Werror -O3 -I./c
 AR := ar
