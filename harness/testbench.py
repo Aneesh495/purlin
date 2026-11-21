@@ -10,7 +10,7 @@ import time
 import subprocess
 from typing import List, Tuple, Dict
 
-KOKA_BIN = "/opt/homebrew/Cellar/koka/3.2.9/bin/koka"
+KOKA_BIN = os.environ.get("KOKA", "koka")
 
 UNIT_TESTS = [
     ("proto/types", "test/unit/test-types.kk"),
