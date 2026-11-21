@@ -20,16 +20,19 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Koka Compiler
+        run: |
+          KOKA_VER="3.2.9"
+          curl -fsSL "https://github.com/koka-lang/koka/releases/download/v${KOKA_VER}/koka-v${KOKA_VER}-linux-x64.tar.gz" -o /tmp/koka.tar.gz
+          sudo tar -xzf /tmp/koka.tar.gz -C /usr/local --strip-components=1
+          koka --version
+
       - name: Verify No Em Dashes
         run: |
           python3 scripts/verify_no_em_dash.py
 
       - name: Build C Kernel Glue Layer
-        run: |
-          gcc -Wall -Wextra -O3 -fPIC -c src/c/socket.c -o src/c/socket.o
-          gcc -Wall -Wextra -O3 -fPIC -c src/c/fib_nl.c -o src/c/fib_nl.o
-          ar rcs src/c/libpurlin_c.a src/c/socket.o src/c/fib_nl.o
-          test -f src/c/libpurlin_c.a
+        run: make c-glue
 
       - name: Run RFC Conformance Testbench
         run: |
@@ -46,13 +49,6 @@ jobs:
       - name: Run Automated Testbench Harness
         run: |
           python3 harness/testbench.py
-
-      - name: Install Koka Compiler
-        run: |
-          KOKA_VER="3.2.0"
-          curl -sSL "https://github.com/koka-lang/koka/releases/download/v${KOKA_VER}/koka-v${KOKA_VER}-linux-x64.tar.gz" -o /tmp/koka.tar.gz
-          sudo tar -xzf /tmp/koka.tar.gz -C /usr/local --strip-components=1
-          koka --version
 
       - name: Run Koka Unit and Integration Tests
         run: |
